@@ -1,4 +1,5 @@
 from bitarray import bitarray
+import numpy
 
 def bivium_equations(keystream, fixed_bit_reg):
     
@@ -37,12 +38,12 @@ def bivium_equations(keystream, fixed_bit_reg):
         t3 = add(t3, fact3)
 
         #rotation
-        kx[1:92] = kx[0:91]
-        ky[1:83] = ky[0:82]
-        kw[1:110] = kw[0:109]
-        kx[0] = t2
+        kx = kx[-1:] + kx [:-1]
+        kx[0] = t3
+        ky = ky[-1:] + ky [:-1]
         ky[0] = t1
-        kw[0] = t3
+        kw = kw[-1:] + kw [:-1]
+        kw[0] = t2
      
     return z
 

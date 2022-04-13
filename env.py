@@ -442,6 +442,9 @@ if __name__ == "__main__":
             print("\n+print_aux: stampa il sistema che definisce le variabili ausiliarie")
             print("\n+exit: esci dalla shell interattiva\n")
 
+        elif command == "controlla":
+            system.check_equations()
+        
         elif command == "exit" and args == []:
             print("Session Closed.")
             break

@@ -2,7 +2,7 @@ from sympy import *
 from file_handler import *
 from copy import deepcopy
 from random import getrandbits
-#from to_cnf_v3 import system_to_cnf, solve
+from to_cnf_v3 import system_to_cnf, solve
 from bivium import bivium_registers, bivium_equations, clean_system
 
 def is_linear(equation):
@@ -30,6 +30,9 @@ def index_to_var(index):
 
 def equation_to_string(equation, i):
     return f"k{i + 1}: {int(equation[1])} = {' + '.join([' * '.join(x) for x in equation[0]])}"
+
+def equation_to_kamilstring(equation):
+    return f"{' ^ '.join([' & '.join(x) for x in equation[0]])}" + " "
 
 def linear_equation_to_sat_string(equation, i):
     return ("" if equation[1] else "-") + ' '.join([var for var, in equation[0]])
@@ -227,6 +230,33 @@ class BiviumSystemPerformance:
         #    non_linear_equations.append(f"~Xor(a{i + 1},{', '.join(['&'.join(x) for x in self.aux_system[i]])})")
 
         return system_to_cnf(linear_equations, self.aux_system)
+
+def values(eq, key, iv):
+        for i in range(0, 80):
+            aux = f"x{i+1} "
+            eq = eq.replace(aux, (key[i] + " "))
+
+        for i in range(80, 93):
+            aux = f"x{i+1} "
+            eq = eq.replace(aux, '0 ')
+
+        for i in range(0, 80):
+            aux = f"y{i+1} "
+            eq = eq.replace(aux, (iv[i] + " "))
+
+        for i in range(80, 84):
+            aux = f"y{i+1} "
+            eq = eq.replace(aux, '0 ')
+
+        for i in range(0, 108):
+            aux = f"w{i+1} "
+            eq = eq.replace(aux, '0 ')
+
+        for i in range(108, 111):
+            aux = f"w{i+1} "
+            eq = eq.replace(aux, '1 ')
+
+        return eq
 
 class BiviumSystem:
 
@@ -566,3 +596,30 @@ class BiviumSystem:
     def print_aux(self):
         for i in range(len(self.aux_system)):
             print(f"a{i + 1} = {' + '.join([' * '.join(x) for x in self.aux_system[i]])}", end = "\n\n")
+            
+    def check_equations(self):
+
+        print("KEY (hex): ")
+        key = input()
+        while len(key) != 20:
+            print("la chiave deve essere di 80 bit (20 caratteri esadecimali)")
+            key = input()
+        key = '0x' + key
+        print("IV (hex): ")
+        iv = input()
+        while len(iv) != 20:
+            print("l'IV deve essere di 80 bit (20 caratteri esadecimali)")
+            iv = input()
+        iv = '0x' + iv
+
+        key_bits = f'{int(key, 0):0>80b}'
+        iv_bits = f'{int(iv, 0):0>80b}'
+
+        z = self.z
+        result = ""
+
+        for i in range(len(z)):
+            eq = equation_to_kamilstring(z[i])
+            result += str(eval(values(eq, key_bits, iv_bits)))
+
+        print(result)    
