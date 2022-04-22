@@ -1,0 +1,6 @@
+calcola_keystream
+fa430010b48723330069
+8000ae43a587a09fbcc1
+x1
+aux_simple
+solve

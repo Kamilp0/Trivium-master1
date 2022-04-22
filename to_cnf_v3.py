@@ -1,6 +1,8 @@
 from pycryptosat import Solver
+import time
 
 def solve(main_system, aux_system):
+    start = time.time()
     sat = Solver()
 
     var_dict = {}
@@ -36,10 +38,19 @@ def solve(main_system, aux_system):
             sat.add_clauses([[-var_dict[f'a{i + 1}'], var_dict[l[0]]], [-var_dict[f'a{i + 1}'], var_dict[l[1]]], [var_dict[f'a{i + 1}'], -var_dict[l[0]], -var_dict[l[1]]]])
         elif len(l) == 3:
             sat.add_clauses([[-var_dict[f'a{i + 1}'], var_dict[l[0]]], [-var_dict[f'a{i + 1}'], var_dict[l[1]]], [-var_dict[f'a{i + 1}'], var_dict[l[2]]], [var_dict[f'a{i + 1}'], -var_dict[l[0]], -var_dict[l[1]], -var_dict[l[2]]]])
+        elif len(l) == 4:
+            sat.add_clauses([[-var_dict[f'a{i + 1}'], var_dict[l[0]]], [-var_dict[f'a{i + 1}'], var_dict[l[1]]], [-var_dict[f'a{i + 1}'], var_dict[l[2]]], [-var_dict[f'a{i + 1}'], var_dict[l[3]]], [var_dict[f'a{i + 1}'], -var_dict[l[0]], -var_dict[l[1]], -var_dict[l[2]], -var_dict[l[3]] ]])
+        elif len(l) == 5:
+            sat.add_clauses([[-var_dict[f'a{i + 1}'], var_dict[l[0]]], [-var_dict[f'a{i + 1}'], var_dict[l[1]]], [-var_dict[f'a{i + 1}'], var_dict[l[2]]], [-var_dict[f'a{i + 1}'], var_dict[l[3]]], [var_dict[f'a{i + 1}'], var_dict[l[4]]], [var_dict[f'a{i + 1}'], -var_dict[l[0]], -var_dict[l[1]], -var_dict[l[2]], -var_dict[l[3]], -var_dict[l[4]] ]])
+        elif len(l) == 6:
+            sat.add_clauses([[-var_dict[f'a{i + 1}'], var_dict[l[0]]], [-var_dict[f'a{i + 1}'], var_dict[l[1]]], [-var_dict[f'a{i + 1}'], var_dict[l[2]]], [-var_dict[f'a{i + 1}'], var_dict[l[3]]], [var_dict[f'a{i + 1}'], var_dict[l[4]]], [var_dict[f'a{i + 1}'], var_dict[l[5]]], [var_dict[f'a{i + 1}'], -var_dict[l[0]], -var_dict[l[1]], -var_dict[l[2]], -var_dict[l[3]], -var_dict[l[4]], -var_dict[l[5]] ]])
         else:
             raise ValueError(f"Variabile ausiliaria a{i + 1} troppo grande!")
 
-    return (var_dict, sat.solve()[1])
+    result = sat.solve()[1]
+    end = time.time()
+    exec_time = end-start
+    return (var_dict, result, exec_time)
     
 def system_to_cnf(main_system, aux_system):
     var_dict = {}

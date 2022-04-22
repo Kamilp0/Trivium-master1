@@ -23,7 +23,7 @@ def bivium_equations(keystream, fixed_bit_reg):
         t3 = add(kw[65], kw[110])
         z_i = add(t1, t2, t3)
         clean_equation(z_i[0])
-        z.append((z_i[0], z_i[1] ^ bool(keystream[i])))
+        z.append((z_i[0], bool(int(keystream[i]))))
 
         t1 = add(t1, ky[77])
         fact1 = mul(kx[90], kx[91])
@@ -44,7 +44,7 @@ def bivium_equations(keystream, fixed_bit_reg):
         ky[0] = t1
         kw = kw[-1:] + kw [:-1]
         kw[0] = t2
-     
+
     return z
 
 ###OPERAZIONI

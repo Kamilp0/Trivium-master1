@@ -127,7 +127,7 @@ def redo(past_actions, next_actions):
 if __name__ == "__main__":
 
     #inizializza il sistema (con soli '1')
-    system = BiviumSystem(all_one = True)
+    system = BiviumSystem()
 
     #variabili undo/redo
     past_actions = []
@@ -387,7 +387,7 @@ if __name__ == "__main__":
             system.reduced_echelon_form(int(args[0]) - 1, int(args[1]), int(args[2]))
 
         elif command == "solve" and args == []:
-            system.sat_solve()
+            system.sat_solve(system.incognite)
 
         elif command == "sfb" and args != []:
             system.substitute_free_bits(args)
@@ -440,14 +440,47 @@ if __name__ == "__main__":
             print("\n+print_sympy <args>: stampa il sistema corrente in formato convertibile da sympy('print_sat test' redireziona l'output sul file test.txt)")
             print("\n+print_cnf <args>: stampa il sistema corrente in formato cnf")
             print("\n+print_aux: stampa il sistema che definisce le variabili ausiliarie")
+            print("\n+solve: risolve il sistema corrente con SAT solver")
+            print("\n\n-----COMANDI NUOVI-----\n")
+            print("\n+calcola_keystream: ricava 250 bit di keystream a partire da chiave e IV, e crea un nuovo sistema")
+            print("\n+incognite <args>: scegli i bit da trovare (inserisce nel sistema di equazioni le variabili note con il loro valore, ma non le inconite)")
+            print("\n+solve_new: risolvi il sistema, stampa informazioni sulla performance")
             print("\n+exit: esci dalla shell interattiva\n")
 
-        elif command == "controlla":
-            system.check_equations()
+        elif command == "calcola_keystream":
+            system = BiviumSystem("dai")
+
+        elif command == "incognite":
+            system.incognite()
         
         elif command == "exit" and args == []:
             print("Session Closed.")
             break
+        
+        elif command == "variabili":
+            kx = [f"x{n}" for n in range(1, 94)]
+            ky = [f"y{n}" for n in range(1, 85)]
+            kw = [f"w{n}" for n in range(1, 112)]
+            print(kx, ky, kw)
+            
+        elif command == "test":
+            variabili = ['x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7', 'x8', 'x9', 'x10', 'x11', 'x12', 'x13', 'x14', 'x15', 'x16', 'x17', 'x18', 'x19', 'x20', 'x21', 'x22', 'x23', 'x24', 'x25', 'x26', 'x27', 'x28', 'x29', 'x30', 'x31', 'x32', 'x33', 'x34', 'x35', 'x36', 'x37', 'x38', 'x39', 'x40', 'x41', 'x42', 'x43', 'x44', 'x45', 'x46', 'x47', 'x48', 'x49', 'x50', 'x51', 'x52', 'x53', 'x54', 'x55', 'x56', 'x57', 'x58', 'x59', 'x60', 'x61', 'x62', 'x63', 'x64', 'x65', 'x66', 'x67', 'x68', 'x69', 'x70', 'x71', 'x72', 'x73', 'x74', 'x75', 'x76', 'x77', 'x78', 'x79', 'x80', 'x81', 'x82', 'x83', 'x84', 'x85', 'x86', 'x87', 'x88', 'x89', 'x90', 'x91', 'x92', 'x93', 'y1', 'y2', 'y3', 'y4', 'y5', 'y6', 'y7', 'y8', 'y9', 'y10', 'y11', 'y12', 'y13', 'y14', 'y15', 'y16', 'y17', 'y18', 'y19', 'y20', 'y21', 'y22', 'y23', 'y24', 'y25', 'y26', 'y27', 'y28', 'y29', 'y30', 'y31', 'y32', 'y33', 'y34', 'y35', 'y36', 'y37', 'y38', 'y39', 'y40', 'y41', 'y42', 'y43', 'y44', 'y45', 'y46', 'y47', 'y48', 'y49', 'y50', 'y51', 'y52', 'y53', 'y54', 'y55', 'y56', 'y57', 'y58', 'y59', 'y60', 'y61', 'y62', 'y63', 'y64', 'y65', 'y66', 'y67', 'y68', 'y69', 'y70', 'y71', 'y72', 'y73', 'y74', 'y75', 'y76', 'y77', 'y78', 'y79', 'y80', 'y81', 'y82', 'y83', 'y84', 'w1', 'w2', 'w3', 'w4', 'w5', 'w6', 'w7', 'w8', 'w9', 'w10', 'w11', 'w12', 'w13', 'w14', 'w15', 'w16', 'w17', 'w18', 'w19', 'w20', 'w21', 'w22', 'w23', 'w24', 'w25', 'w26', 'w27', 'w28', 'w29', 'w30', 'w31', 'w32', 'w33', 'w34', 'w35', 'w36', 'w37', 'w38', 'w39', 'w40', 'w41', 'w42', 'w43', 'w44', 'w45', 'w46', 'w47', 'w48', 'w49', 'w50', 'w51', 'w52', 'w53', 'w54', 'w55', 'w56', 'w57', 'w58', 'w59', 'w60', 'w61', 'w62', 'w63', 'w64', 'w65', 'w66', 'w67', 'w68', 'w69', 'w70', 'w71', 'w72', 'w73', 'w74', 'w75', 'w76', 'w77', 'w78', 'w79', 'w80', 'w81', 'w82', 'w83', 'w84', 'w85', 'w86', 'w87', 'w88', 'w89', 'w90', 'w91', 'w92', 'w93', 'w94', 'w95', 'w96', 'w97', 'w98', 'w99', 'w100', 'w101', 'w102', 'w103', 'w104', 'w105', 'w106', 'w107', 'w108', 'w109', 'w110', 'w111']
+            incognite = ""
+            mode = "testing"
+            for i in range(200):
+                incognite += variabili[i]
+                incognite += " "
+                for j in range(10):
+
+                    key = hex(random.randint(75557863725914323419136, 1208925819614629174706175))
+                    iv = hex(random.randint(75557863725914323419136, 1208925819614629174706175))
+
+                    system = BiviumSystem(mode, key, iv, incognite)
+                    print("Nuovo sistema creato.\nIncognite: " + incognite + " ")
+                    system.create_simple_nonlinear_aux()
+                    print("calcolo...")
+                    system.sat_solve(system.incognite)
+                    print("risolto!\n")
 
         else:
             print("Comando non riconosciuto")

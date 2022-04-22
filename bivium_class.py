@@ -3,6 +3,7 @@ from file_handler import *
 from copy import deepcopy
 from random import getrandbits
 from to_cnf_v3 import system_to_cnf, solve
+from prova import Trivium
 from bivium import bivium_registers, bivium_equations, clean_system
 
 def is_linear(equation):
@@ -27,6 +28,9 @@ def index_to_var(index):
         return f"y{index - 92}"
     else:
         return f"w{index - 176}"
+
+def known_variable_to_string(equation, i):
+    return f"k{i + 1}: {int(equation[1])} = {equation[0]}"
 
 def equation_to_string(equation, i):
     return f"k{i + 1}: {int(equation[1])} = {' + '.join([' * '.join(x) for x in equation[0]])}"
@@ -54,7 +58,7 @@ def equation_info(equation, global_occ, local_occ):
 
 class BiviumSystemPerformance:
 
-    def __init__(self, len_keystream = 180, all_one = False):
+    def __init__(self, len_keystream = 250, all_one = False):
 
         if all_one:
             self.kx = [True] * 93
@@ -258,20 +262,128 @@ def values(eq, key, iv):
 
         return eq
 
+def calculate_keystream(length, key = "", iv = ""):
+
+    if key == "" and iv == "" :
+        print("KEY (hex): ")
+        key = input()
+        while len(key) != 20:
+            print("la chiave deve essere di 80 bit (20 caratteri esadecimali)")
+            key = input()
+        print("IV (hex): ")
+        iv = input()
+        while len(iv) != 20:
+            print("l'IV deve essere di 80 bit (20 caratteri esadecimali)")
+            iv = input()
+        key = "0x" + key
+        iv = "0x" + iv
+        
+    key_bits = f'{int(key, 0):0>80b}'
+    iv_bits = f'{int(iv, 0):0>80b}'
+
+    keystream = Trivium(key_bits, iv_bits, length)
+
+    key_list = []
+    iv_list = []
+    key_list[:0] = key_bits
+    key_list = list(map(int, key_list))
+    iv_list[:0] = iv_bits
+    iv_list = list(map(int, iv_list))
+
+    return [keystream, key_list, iv_list]
+
+
+def incognite(z, kx, ky, kw, incognite_auto = ""):
+
+        if incognite_auto == "":
+            print("Inserire le variabili da trovare:")
+            incognite_str = input()
+        else:
+            incognite_str = incognite_auto
+        incognite_str += " "
+        new_z = []
+
+        for i in range(93):
+            nome_var = [{f"x{i+1}"}]
+            if (str(nome_var)[3:-3]) + " " not in incognite_str:
+                new_z.append((nome_var, bool(kx[i])))
+
+        for i in range(84):
+            nome_var = [{f"y{i+1}"}]
+            if (str(nome_var)[3:-3]) + " " not in incognite_str:
+                new_z.append((nome_var, bool(ky[i])))
+
+        for i in range(111):
+            nome_var = [{f"w{i+1}"}]
+            if str(nome_var)[3:-3] + " " not in incognite_str:
+                new_z.append((nome_var, bool(kw[i])))   
+
+        z = new_z + z
+        return z, incognite_str     
+
+def print_solution(var_dict, solution, exec_time, incognite):
+
+    f = open("output.txt", "a")
+    variable = ['x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7', 'x8', 'x9', 'x10', 'x11', 'x12', 'x13', 'x14', 'x15', 'x16', 'x17', 'x18', 'x19', 'x20', 'x21', 'x22', 'x23', 'x24', 'x25', 'x26', 'x27', 'x28', 'x29', 'x30', 'x31', 'x32', 'x33', 'x34', 'x35', 'x36', 'x37', 'x38', 'x39', 'x40', 'x41', 'x42', 'x43', 'x44', 'x45', 'x46', 'x47', 'x48', 'x49', 'x50', 'x51', 'x52', 'x53', 'x54', 'x55', 'x56', 'x57', 'x58', 'x59', 'x60', 'x61', 'x62', 'x63', 'x64', 'x65', 'x66', 'x67', 'x68', 'x69', 'x70', 'x71', 'x72', 'x73', 'x74', 'x75', 'x76', 'x77', 'x78', 'x79', 'x80', 'x81', 'x82', 'x83', 'x84', 'x85', 'x86', 'x87', 'x88', 'x89', 'x90', 'x91', 'x92', 'x93', 'y1', 'y2', 'y3', 'y4', 'y5', 'y6', 'y7', 'y8', 'y9', 'y10', 'y11', 'y12', 'y13', 'y14', 'y15', 'y16', 'y17', 'y18', 'y19', 'y20', 'y21', 'y22', 'y23', 'y24', 'y25', 'y26', 'y27', 'y28', 'y29', 'y30', 'y31', 'y32', 'y33', 'y34', 'y35', 'y36', 'y37', 'y38', 'y39', 'y40', 'y41', 'y42', 'y43', 'y44', 'y45', 'y46', 'y47', 'y48', 'y49', 'y50', 'y51', 'y52', 'y53', 'y54', 'y55', 'y56', 'y57', 'y58', 'y59', 'y60', 'y61', 'y62', 'y63', 'y64', 'y65', 'y66', 'y67', 'y68', 'y69', 'y70', 'y71', 'y72', 'y73', 'y74', 'y75', 'y76', 'y77', 'y78', 'y79', 'y80', 'y81', 'y82', 'y83', 'y84', 'w1', 'w2', 'w3', 'w4', 'w5', 'w6', 'w7', 'w8', 'w9', 'w10', 'w11', 'w12', 'w13', 'w14', 'w15', 'w16', 'w17', 'w18', 'w19', 'w20', 'w21', 'w22', 'w23', 'w24', 'w25', 'w26', 'w27', 'w28', 'w29', 'w30', 'w31', 'w32', 'w33', 'w34', 'w35', 'w36', 'w37', 'w38', 'w39', 'w40', 'w41', 'w42', 'w43', 'w44', 'w45', 'w46', 'w47', 'w48', 'w49', 'w50', 'w51', 'w52', 'w53', 'w54', 'w55', 'w56', 'w57', 'w58', 'w59', 'w60', 'w61', 'w62', 'w63', 'w64', 'w65', 'w66', 'w67', 'w68', 'w69', 'w70', 'w71', 'w72', 'w73', 'w74', 'w75', 'w76', 'w77', 'w78', 'w79', 'w80', 'w81', 'w82', 'w83', 'w84', 'w85', 'w86', 'w87', 'w88', 'w89', 'w90', 'w91', 'w92', 'w93', 'w94', 'w95', 'w96', 'w97', 'w98', 'w99', 'w100', 'w101', 'w102', 'w103', 'w104', 'w105', 'w106', 'w107', 'w108', 'w109', 'w110', 'w111']
+
+    print("NUMERO DI INCOGNITE NEL SISTEMA: " + str(len(incognite.split())), file=f)
+    print("NOMI DELLE INCOGNITE: " + str(incognite), file=f)
+    print("\nSoluzione:", file=f)
+    sol_key = []
+    sol_iv = []
+    for i in range(len(variable)):
+        #print(variable[i] + " = " + str(int(solution[var_dict[variable[i]]])) )
+        if 0 <= i <= 79 :
+            sol_key.append(str(int(solution[var_dict[variable[i]]])))
+        elif 93 <= i <= 172 :
+            sol_iv.append(str(int(solution[var_dict[variable[i]]])))
+
+    print("\nKEY: " + hex(int("".join(sol_key), 2)), file=f)
+    print("IV: " + hex(int("".join(sol_iv), 2)), file=f)     
+    print("\nTempo di esecuzione: " + str(exec_time) + "s\n", file=f)      
+    print("=======================================================================================================\n", file=f)     
+    f.close()
 class BiviumSystem:
 
-    def __init__(self, len_keystream = 180, all_one = False):
-        if all_one:
-            self.kx = [True] * 93
-            self.ky = [True] * 84
-            self.kw = [True] * 111
+    def __init__(self, mode = "random", init_key="", init_iv="", init_incognite=""):
+        len_keystream = 200
+        if  mode != "random":
+
+            if init_key == "" and init_iv == "" and init_incognite == "":
+                self.init_patameters = calculate_keystream(len_keystream)
+            else:
+                self.init_patameters = calculate_keystream(len_keystream, init_key, init_iv)
+
+            self.keystream = self.init_patameters[0]
+            self.key = self.init_patameters[1]
+            self.iv = self.init_patameters[2]
+            self.kx = self.key + [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            self.ky = self.iv + [0, 0, 0, 0]
+            self.kw = [0 for x in range(108)] + [1, 1, 1]
+            self.z = bivium_equations(self.keystream, [])
+
+            if init_key == "" and init_iv == "" and init_incognite == "":
+                self.z, self.incognite = incognite(self.z, self.kx, self.ky, self.kw)
+            else:
+                self.z, self.incognite = incognite(self.z, self.kx, self.ky, self.kw, init_incognite)
+            """
+            print("\nKEYSTREAM: " + (" ".join(self.keystream)).replace(" ",""))
+            print("\nKEY: " + (" ".join(str(self.key))).replace(" ",""))
+            print("\nIV: " + (" ".join(str(self.iv))).replace(" ",""))
+            print("\n\n stato iniziale dei registri:")
+            print("\nX = " + str(self.kx))
+            print("\nY = " + str(self.ky))
+            print("\nW = " + str(self.kw))
+            """
         else:
             self.kx = [bool(getrandbits(1)) for x in range(93)]
             self.ky = [bool(getrandbits(1)) for x in range(84)]
             self.kw = [bool(getrandbits(1)) for x in range(111)]
+            self.keystream = bivium_registers(len_keystream, self.kx, self.ky, self.kw)
+            self.key = ""
+            self.iv = ""
+            self.z = bivium_equations(self.keystream, [])
 
-        self.keystream = bivium_registers(len_keystream, self.kx, self.ky, self.kw)
-        self.z = bivium_equations(self.keystream, [])
         self.z_free_bits = deepcopy(self.z)
         
         self.fixed = []
@@ -500,7 +612,7 @@ class BiviumSystem:
                 self.aux_system.append(aux_expression)
 
     ###SOLVE
-    def sat_solve(self, nofb = False):
+    def sat_solve(self, incognite, nofb = False):
         z = self.z if nofb else self.z_free_bits
 
         non_linear_equations = []
@@ -516,19 +628,23 @@ class BiviumSystem:
         #for i in range(len(self.aux_system)):
         #    non_linear_equations.append(f"~Xor(a{i + 1},{', '.join(['&'.join(x) for x in self.aux_system[i]])})")
 
-        var_dict, solution = solve(linear_equations, self.aux_system)
+        #print(non_linear_equations)
+        var_dict, solution, exec_time = solve(linear_equations, self.aux_system)
+        print_solution(var_dict, solution, exec_time, incognite)
 
-        for var, value in var_dict.items():
-            if var[0] != "a" and self.var_value(var) != solution[value]:
-                raise ValueError(f"{var} con valore errato!")
+        #for var, value in var_dict.items():
+        #    if var[0] != "a" and self.var_value(var) != solution[value]:
+        #        raise ValueError(f"{var} con valore errato!")
 
     ###PRINT
     def print(self, nofb = False):
 
         z = self.z if nofb else self.z_free_bits
-
+        
         for i in range(len(z)):
             print(equation_to_string(z[i], i), end = "\n\n")
+
+
 
     def print_smaller(self, nofb = False):
         
@@ -596,30 +712,3 @@ class BiviumSystem:
     def print_aux(self):
         for i in range(len(self.aux_system)):
             print(f"a{i + 1} = {' + '.join([' * '.join(x) for x in self.aux_system[i]])}", end = "\n\n")
-            
-    def check_equations(self):
-
-        print("KEY (hex): ")
-        key = input()
-        while len(key) != 20:
-            print("la chiave deve essere di 80 bit (20 caratteri esadecimali)")
-            key = input()
-        key = '0x' + key
-        print("IV (hex): ")
-        iv = input()
-        while len(iv) != 20:
-            print("l'IV deve essere di 80 bit (20 caratteri esadecimali)")
-            iv = input()
-        iv = '0x' + iv
-
-        key_bits = f'{int(key, 0):0>80b}'
-        iv_bits = f'{int(iv, 0):0>80b}'
-
-        z = self.z
-        result = ""
-
-        for i in range(len(z)):
-            eq = equation_to_kamilstring(z[i])
-            result += str(eval(values(eq, key_bits, iv_bits)))
-
-        print(result)    
